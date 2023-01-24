@@ -1,0 +1,24 @@
+{
+  "name": "sync-cameras",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "babylonjs-gltf2interface": "^5.41.0",
+    "eslint": "^8.30.0",
+    "prettier": "^2.8.1",
+    "prettier-eslint": "^15.0.1",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.2"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^5.38.0",
+    "@babylonjs/loaders": "^5.38.0"
+  }
+}
