@@ -14,7 +14,7 @@
 	// $: console.log(world)
 </script>
 
-<T.PerspectiveCamera makeDefault position={[0, 20, 200]} fov={50}>
+<T.PerspectiveCamera makeDefault position={[0, 20, 30]} fov={50}>
 	<OrbitControls maxPolarAngle={degToRad(80)} target={{ x: 0, y: 0, z: 0 }} />
 </T.PerspectiveCamera>
 
