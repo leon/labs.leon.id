@@ -33,6 +33,7 @@
 
 	// back suspension
 	const BACK_SUSP_MASS = 50
+	const BACK_SUSP_FRICTION = 0.9
 	const BACK_SUSP_OFFSET = -1
 	const BACK_SUSP_OFFSET_ROT = -0.3
 	const BACK_SUSP_RANGE: [number, number] = [0.2, 0.5]
@@ -91,7 +92,7 @@
 	$: backWheelRB2.set(backWheelRB)
 	$: $backWheelJoint?.setContactsEnabled(false)
 	$: $backWheelJoint?.configureMotorModel(MotorModel.AccelerationBased)
-	$: $backWheelJoint?.configureMotorVelocity($controlAxis.y * -ACCELERATION, 10)
+	$: $backWheelJoint?.configureMotorVelocity($controlAxis.y * -ACCELERATION, 1)
 
 	// front wheel
 	const {
@@ -159,7 +160,7 @@
 		shape="ball"
 		args={[BACK_SUSP_WHEEL_RADIUS]}
 		mass={BACK_SUSP_MASS / 2}
-		friction={0.6}
+		friction={BACK_SUSP_FRICTION}
 	>
 		<T.Mesh rotation={{ x: 90 * DEG2RAD }} castShadow>
 			<T.CylinderGeometry
