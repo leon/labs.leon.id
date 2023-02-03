@@ -10,9 +10,9 @@
 	const { world } = useRapier()
 	let rigidBody
 	$: if (rigidBody && collider) {
-		collider.setDensity(2000) // 2000 kg/m^3 according to chat gpt
-		collider.setFriction(0.6)
-		collider.setRestitution(0.01)
+		// collider.setDensity(2000) // 2000 kg/m^3 according to chat gpt
+		collider.setFriction(0.4)
+		collider.setRestitution(0.03)
 		world.createCollider(collider, rigidBody)
 	}
 </script>
@@ -20,7 +20,7 @@
 <RigidBody
 	bind:rigidBody
 	type="fixed"
-	position={{ x: -5, y: -1, z: -(depth / 2) }}
+	position={{ x: -5, y: 0, z: -(depth / 2) }}
 >
 	<T.Mesh receiveShadow>
 		<Three type={geometry} />

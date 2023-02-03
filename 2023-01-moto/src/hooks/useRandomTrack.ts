@@ -8,7 +8,7 @@ export interface TrackOptions {
 	maxHeight?: number
 }
 export function useRandomTrack({
-	startLength = 20,
+	startLength = 10,
 	length = 500,
 	depth = 20,
 	maxHeight = 10,
@@ -34,19 +34,27 @@ export function useRandomTrack({
 		const path = new Shape()
 
 		// create the rest of the track randomly
-		let currentHeight = 0
+		const points = []
+		let currentHeight = -1
 		for (let l = 0; l < length; l++) {
 			if (l < startLength) {
-				path.lineTo(l, currentHeight)
+				points.push({ x: l, y: currentHeight })
 				continue
 			}
 
 			// switch height every 5 units
 			if (l % 5 == 0) {
-				currentHeight += MathUtils.randInt(-1, 1)
+				currentHeight += MathUtils.randInt(-2, 1)
+				currentHeight = MathUtils.clamp(currentHeight, 0, maxHeight)
 			}
-			currentHeight = MathUtils.clamp(currentHeight, 0, maxHeight)
-			path.lineTo(l, currentHeight)
+			points.push({ x: l * 2, y: currentHeight })
+		}
+
+		path.moveTo(0, -1)
+		for (let i = 0; i < length; i++) {
+			let xc = (points[i].x + (points[i + 1]?.x ?? 0)) / 2
+			let yc = (points[i].y + (points[i + 1]?.y ?? 0)) / 2
+			path.quadraticCurveTo(points[i].x, points[i].y, xc, yc)
 		}
 
 		return path
@@ -64,8 +72,8 @@ export function useRandomTrack({
 	function generateGeometry(shape: Shape): ExtrudeGeometry {
 		// first we close the shape, so that we can extrude it
 		shape = shape.clone() // make sure we don't modify the original
-		shape.lineTo(shape.currentPoint.x, -1)
-		shape.lineTo(0, -1)
+		shape.lineTo(shape.currentPoint.x, -2)
+		shape.lineTo(0, -2)
 		shape.closePath()
 
 		const geometry = new ExtrudeGeometry(shape, {

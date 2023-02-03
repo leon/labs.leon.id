@@ -27,26 +27,29 @@
 
 	// chassi
 	const CHASSI_MASS = 50
-	const CHASSI_DAMP = 0.8
-	const ACCELERATION = 2200
+	const CHASSI_DAMP = 0.9
+	const ACCELERATION = 300
 	const ROTATION = 1.5
 
 	// back suspension
-	const BACK_SUSP_MASS = 50
-	const BACK_SUSP_FRICTION = 0.9
+	const BACK_SUSP_MASS = 30
+	const BACK_SUSP_FRICTION = 0.6
 	const BACK_SUSP_OFFSET = -1
 	const BACK_SUSP_OFFSET_ROT = -0.3
 	const BACK_SUSP_RANGE: [number, number] = [0.2, 0.5]
-	const BACK_SUSP_MOTOR = [BACK_SUSP_RANGE[1], 100, 10, 300] as const
+	const BACK_SUSP_MOTOR = [BACK_SUSP_RANGE[1], 100, 80, 100] as const
 	const BACK_SUSP_WHEEL_RADIUS = 0.3
+	const BACK_SUSP_ANGULAR_DAMPING = 0.1
 
 	// front suspension
-	const FRONT_SUSP_MASS = 50
+	const FRONT_SUSP_MASS = 30
+	const FRONT_SUSP_FRICTION = 0.2
 	const FRONT_SUSP_OFFSET = 0.6
-	const FRONT_SUSP_WHEEL_RADIUS = 0.3
 	const FRONT_SUSP_RAKE = 0.2
 	const FRONT_SUSP_RANGE: [number, number] = [0.3, 0.9]
-	const FRONT_SUSP_MOTOR = [FRONT_SUSP_RANGE[1], 200, 80, 220] as const
+	const FRONT_SUSP_MOTOR = [FRONT_SUSP_RANGE[1], 100, 80, 100] as const
+	const FRONT_SUSP_WHEEL_RADIUS = 0.3
+	const FRONT_SUSP_ANGULAR_DAMPING = 0
 
 	// back axel
 	const {
@@ -92,7 +95,10 @@
 	$: backWheelRB2.set(backWheelRB)
 	$: $backWheelJoint?.setContactsEnabled(false)
 	$: $backWheelJoint?.configureMotorModel(MotorModel.AccelerationBased)
-	$: $backWheelJoint?.configureMotorVelocity($controlAxis.y * -ACCELERATION, 1)
+	$: $backWheelJoint?.configureMotorVelocity(
+		$controlAxis.y * -ACCELERATION,
+		100
+	)
 
 	// front wheel
 	const {
@@ -122,7 +128,7 @@
 </script>
 
 <RigidBody
-	position={{ x: 2, y: 5 }}
+	position={{ x: 2, y: 3 }}
 	bind:rigidBody={chassiRB}
 	canSleep={false}
 	enabledTranslations={[true, true, false]}
@@ -154,7 +160,7 @@
 	bind:rigidBody={backWheelRB}
 	canSleep={false}
 	lockTranslations={true}
-	angularDamping={0.8}
+	angularDamping={BACK_SUSP_ANGULAR_DAMPING}
 >
 	<Collider
 		shape="ball"
@@ -170,17 +176,18 @@
 		</T.Mesh>
 	</Collider>
 </RigidBody>
+
 <RigidBody
 	bind:rigidBody={frontWheelRB}
 	canSleep={false}
 	lockTranslations={true}
-	angularDamping={0.5}
+	angularDamping={FRONT_SUSP_ANGULAR_DAMPING}
 >
 	<Collider
 		shape="ball"
 		args={[FRONT_SUSP_WHEEL_RADIUS]}
 		mass={FRONT_SUSP_MASS / 2}
-		friction={0.4}
+		friction={FRONT_SUSP_FRICTION}
 	>
 		<T.Mesh rotation={{ x: 90 * DEG2RAD }} castShadow>
 			<T.CylinderGeometry
