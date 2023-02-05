@@ -4,7 +4,7 @@
 	import Track from './entities/Track.svelte'
 	import Bike from './entities/Bike.svelte'
 	import { OrbitControls } from '@threlte/core'
-	import { degToRad } from 'three/src/math/MathUtils'
+	import { DEG2RAD, degToRad } from 'three/src/math/MathUtils'
 
 	// set up physics to use more iterations for more stability
 	const { world } = useRapier()
@@ -20,9 +20,14 @@
 
 <Track />
 
-<Bike />
+<Bike followCamera />
 
 <T.GridHelper args={[500, 50]} />
 <T.AxesHelper args={[2]} />
+
+<T.Mesh rotation={{ x: 90 * DEG2RAD }} position={{ x: 3, y: 3 }} castShadow>
+	<T.CylinderGeometry args={[2, 0.5, 0.2, 24]} />
+	<T.MeshStandardMaterial args={[{ color: 0x000000 }]} />
+</T.Mesh>
 
 <Debug depthTest={false} depthWrite={false} />

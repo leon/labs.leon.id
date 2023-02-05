@@ -4,14 +4,16 @@ import { ColliderDesc, Vector3 } from '@dimforge/rapier3d-compat'
 export interface TrackOptions {
 	startLength?: number
 	length?: number
+	segment?: number
 	depth?: number
 	maxHeight?: number
 }
 export function useRandomTrack({
-	startLength = 10,
-	length = 500,
+	startLength = 20,
+	length = 1000,
+	segment = 5,
 	depth = 20,
-	maxHeight = 10,
+	maxHeight = 16,
 }: TrackOptions): {
 	geometry: ExtrudeGeometry
 	collider: ColliderDesc
@@ -33,28 +35,60 @@ export function useRandomTrack({
 	function generateShape(): Shape {
 		const path = new Shape()
 
+		// start below ground so the bike doesn't interfere with the ground
+		path.moveTo(0, -1)
+
 		// create the rest of the track randomly
 		const points = []
 		let currentHeight = -1
-		for (let l = 0; l < length; l++) {
+		for (let l = 0; l < length; l += segment) {
 			if (l < startLength) {
 				points.push({ x: l, y: currentHeight })
 				continue
 			}
-
-			// switch height every 5 units
-			if (l % 5 == 0) {
-				currentHeight += MathUtils.randInt(-2, 1)
-				currentHeight = MathUtils.clamp(currentHeight, 0, maxHeight)
-			}
-			points.push({ x: l * 2, y: currentHeight })
+			currentHeight += MathUtils.randInt(-2, 1)
+			currentHeight = MathUtils.clamp(currentHeight, 0, maxHeight)
+			points.push({ x: l, y: currentHeight })
 		}
 
 		path.moveTo(0, -1)
-		for (let i = 0; i < length; i++) {
-			let xc = (points[i].x + (points[i + 1]?.x ?? 0)) / 2
-			let yc = (points[i].y + (points[i + 1]?.y ?? 0)) / 2
-			path.quadraticCurveTo(points[i].x, points[i].y, xc, yc)
+
+		const gradient = (a, b) => (b.y - a.y) / (b.x - a.x)
+
+		let t = 1
+		let f = 0.3
+		let m = 0
+		let dx1 = 0
+		let dy1 = 0
+		let dx2 = 0
+		let dy2 = 0
+		let previousPoint = points[0]
+		let nextPoint
+
+		for (var i = 1, len = points.length; i < len; i++) {
+			var currentPoint = points[i]
+			nextPoint = points[i + 1]
+			if (nextPoint) {
+				m = gradient(previousPoint, nextPoint)
+				dx2 = (nextPoint.x - currentPoint.x) * -f
+				dy2 = dx2 * m * t
+			} else {
+				dx2 = 0
+				dy2 = 0
+			}
+
+			path.bezierCurveTo(
+				previousPoint.x - dx1,
+				previousPoint.y - dy1,
+				currentPoint.x + dx2,
+				currentPoint.y + dy2,
+				currentPoint.x,
+				currentPoint.y
+			)
+
+			dx1 = dx2
+			dy1 = dy2
+			previousPoint = currentPoint
 		}
 
 		return path

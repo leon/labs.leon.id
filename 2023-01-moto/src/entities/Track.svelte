@@ -10,9 +10,9 @@
 	const { world } = useRapier()
 	let rigidBody
 	$: if (rigidBody && collider) {
-		// collider.setDensity(2000) // 2000 kg/m^3 according to chat gpt
-		collider.setFriction(0.4)
-		collider.setRestitution(0.03)
+		collider.setDensity(2000) // 2000 kg/m^3 according to chat gpt
+		collider.setFriction(0.3)
+		collider.setRestitution(0.05)
 		world.createCollider(collider, rigidBody)
 	}
 </script>
