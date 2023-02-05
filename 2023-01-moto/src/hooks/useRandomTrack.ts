@@ -1,5 +1,5 @@
 import { ExtrudeGeometry, MathUtils, Shape } from 'three'
-import { ColliderDesc, Vector3 } from '@dimforge/rapier3d-compat'
+import { ColliderDesc } from '@dimforge/rapier3d-compat'
 
 export interface TrackOptions {
 	startLength?: number
@@ -35,12 +35,9 @@ export function useRandomTrack({
 	function generateShape(): Shape {
 		const path = new Shape()
 
-		// start below ground so the bike doesn't interfere with the ground
-		path.moveTo(0, -1)
-
 		// create the rest of the track randomly
 		const points = []
-		let currentHeight = -1
+		let currentHeight = 0
 		for (let l = 0; l < length; l += segment) {
 			if (l < startLength) {
 				points.push({ x: l, y: currentHeight })
@@ -50,8 +47,6 @@ export function useRandomTrack({
 			currentHeight = MathUtils.clamp(currentHeight, 0, maxHeight)
 			points.push({ x: l, y: currentHeight })
 		}
-
-		path.moveTo(0, -1)
 
 		const gradient = (a, b) => (b.y - a.y) / (b.x - a.x)
 
@@ -64,6 +59,9 @@ export function useRandomTrack({
 		let dy2 = 0
 		let previousPoint = points[0]
 		let nextPoint
+
+		// start below ground so the bike doesn't interfere with the ground
+		path.moveTo(0, 0)
 
 		for (var i = 1, len = points.length; i < len; i++) {
 			var currentPoint = points[i]
@@ -106,8 +104,8 @@ export function useRandomTrack({
 	function generateGeometry(shape: Shape): ExtrudeGeometry {
 		// first we close the shape, so that we can extrude it
 		shape = shape.clone() // make sure we don't modify the original
-		shape.lineTo(shape.currentPoint.x, -2)
-		shape.lineTo(0, -2)
+		shape.lineTo(shape.currentPoint.x, -1)
+		shape.lineTo(0, -1)
 		shape.closePath()
 
 		const geometry = new ExtrudeGeometry(shape, {

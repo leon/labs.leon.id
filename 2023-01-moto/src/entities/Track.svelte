@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, Three } from '@threlte/core'
 	import { RigidBody, useRapier } from '@threlte/rapier'
+	import { degToRad } from 'three/src/math/MathUtils'
 	import { useRandomTrack } from '../hooks/useRandomTrack'
 
 	const depth = 20
@@ -17,20 +18,22 @@
 	}
 </script>
 
-<RigidBody
-	bind:rigidBody
-	type="fixed"
-	position={{ x: -5, y: 0, z: -(depth / 2) }}
->
+<RigidBody bind:rigidBody type="fixed" position={{ z: -(depth / 2) }}>
 	<T.Mesh receiveShadow>
 		<Three type={geometry} />
 		<T.MeshStandardMaterial
 			args={[
 				{
-					color: 0xaaee88,
+					color: 0xc2b280,
 					wireframe: false,
 				},
 			]}
 		/>
 	</T.Mesh>
 </RigidBody>
+
+<!-- Ground -->
+<T.Mesh position.x={500} rotation.x={degToRad(-90)}>
+	<T.PlaneGeometry args={[1500, 1500]} />
+	<T.MeshStandardMaterial args={[{ color: 0xc2b280 }]} />
+</T.Mesh>

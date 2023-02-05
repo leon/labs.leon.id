@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T, useFrame, useThrelte } from '@threlte/core'
+	import { Group, T, useFrame, useThrelte } from '@threlte/core'
 	import { Vector3 } from 'three'
 	import {
 		MotorModel,
@@ -15,13 +15,14 @@
 	import { useControls } from '../hooks/useControls'
 
 	import { useFollowCamera } from '../hooks/useFollowCamera'
-	import { DEG2RAD } from 'three/src/math/MathUtils'
-	import { speed } from '../state/bike.state'
+	import { degToRad, lerp, smoothstep } from 'three/src/math/MathUtils'
+	import { speed, traction } from '../state/bike.state'
 	import { MeshStandardMaterial } from 'three'
 
 	export let followCamera = false
 
 	const wheelMaterial = new MeshStandardMaterial({ color: 0x000000 })
+	const chassiMaterial = new MeshStandardMaterial({ color: 0x555555 })
 
 	const { camera } = useThrelte()
 	const { controlAxis, controlActions } = useControls()
@@ -33,13 +34,13 @@
 	let frontWheelRB: RapierRigidBody
 
 	// chassi
-	const CHASSI_MASS = 70
+	const CHASSI_MASS = 60
 	const CHASSI_DAMP = 2
-	const ACCELERATION_FORCE = 300
+	const ACCELERATION_FORCE = 400
 	const ROTATION_FORCE = 1.2
 
 	// back suspension
-	const BACK_SUSP_MASS = 45
+	const BACK_SUSP_MASS = 40
 	const BACK_SUSP_FRICTION = 1
 	const BACK_SUSP_OFFSET = -1
 	const BACK_SUSP_OFFSET_ROT = -0.3
@@ -138,86 +139,97 @@
 		}
 		const s = chassiRB.linvel()
 		velocity.set(s.x, s.y, s.z)
-		speed.set(velocity.length())
+
+		const curSpeed = velocity.length() * 3.6
+		speed.set(curSpeed)
+
+		const tractionUnit = smoothstep(curSpeed, 0, 50)
+		const curTraction = lerp(0.8, 0.3, tractionUnit)
+		traction.set(curTraction)
 	})
 
 	// Camera
 	$: if (followCamera && chassiRB) useFollowCamera($camera, chassiRB)
 </script>
 
-<RigidBody
-	position={{ x: 3, y: 7 }}
-	bind:rigidBody={chassiRB}
-	canSleep={false}
-	enabledTranslations={[true, true, false]}
-	enabledRotations={[false, false, true]}
-	angularDamping={CHASSI_DAMP}
->
-	<Collider
-		position={{ x: -0.2, y: -0.2 }}
-		rotation={{ z: -10 * DEG2RAD }}
-		shape="cuboid"
-		args={[0.5, 0.4, 0.2]}
-		mass={CHASSI_MASS}
-	/>
-	<T.Mesh castShadow>
-		<T.BoxGeometry args={[0.7, 0.6, 0.3]} />
-		<T.MeshStandardMaterial />
-	</T.Mesh>
-</RigidBody>
-
-<!-- Axels -->
-<RigidBody bind:rigidBody={backAxelRB} canSleep={false}>
-	<Collider
-		shape={'cuboid'}
-		args={[0.03, 0.03, 0.3]}
-		mass={BACK_SUSP_MASS / 2}
-	/>
-</RigidBody>
-<RigidBody bind:rigidBody={frontAxelRB} canSleep={false}>
-	<Collider
-		shape={'cuboid'}
-		args={[0.03, 0.03, 0.3]}
-		mass={FRONT_SUSP_MASS / 2}
-	/>
-</RigidBody>
-
-<!-- Wheels -->
-<RigidBody
-	bind:rigidBody={backWheelRB}
-	canSleep={false}
-	lockTranslations={true}
-	angularDamping={BACK_SUSP_ANGULAR_DAMPING}
->
-	<Collider
-		shape="ball"
-		args={[BACK_SUSP_WHEEL_RADIUS]}
-		mass={BACK_SUSP_MASS / 2}
-		friction={BACK_SUSP_FRICTION}
-	/>
-	<T.Mesh rotation={{ x: 90 * DEG2RAD }} castShadow>
-		<T.CylinderGeometry
-			args={[BACK_SUSP_WHEEL_RADIUS, BACK_SUSP_WHEEL_RADIUS, 0.2, 24]}
+<Group position={{ x: 2, y: 3 }}>
+	<RigidBody
+		bind:rigidBody={chassiRB}
+		canSleep={false}
+		enabledTranslations={[true, true, false]}
+		enabledRotations={[false, false, true]}
+		angularDamping={CHASSI_DAMP}
+	>
+		<Collider
+			shape="capsule"
+			args={[0.4, 0.3]}
+			position={{ x: 0, y: -0.2 }}
+			rotation={{ z: degToRad(-70) }}
+			mass={CHASSI_MASS}
 		/>
-		<T.MeshStandardMaterial args={[{ color: 0x000000 }]} />
-	</T.Mesh>
-</RigidBody>
+		<T.Mesh
+			material={chassiMaterial}
+			position.y={-0.2}
+			rotation.z={degToRad(30)}
+			scale.x={1.5}
+			castShadow
+		>
+			<T.TetrahedronGeometry args={[0.4, 4]} />
+		</T.Mesh>
+	</RigidBody>
 
-<RigidBody
-	bind:rigidBody={frontWheelRB}
-	canSleep={false}
-	lockTranslations={true}
-	angularDamping={FRONT_SUSP_ANGULAR_DAMPING}
->
-	<Collider
-		shape="ball"
-		args={[FRONT_SUSP_WHEEL_RADIUS]}
-		mass={FRONT_SUSP_MASS / 2}
-		friction={FRONT_SUSP_FRICTION}
-	/>
-	<T.Mesh rotation={{ x: 90 * DEG2RAD }} {wheelMaterial} castShadow>
-		<T.TorusGeometry
-			args={[FRONT_SUSP_WHEEL_RADIUS, FRONT_SUSP_WHEEL_RADIUS, 0.2, 24]}
+	<!-- Axels -->
+	<RigidBody bind:rigidBody={backAxelRB} canSleep={false}>
+		<Collider
+			shape={'cuboid'}
+			args={[0.03, 0.03, 0.3]}
+			mass={BACK_SUSP_MASS / 2}
 		/>
-	</T.Mesh>
-</RigidBody>
+	</RigidBody>
+	<RigidBody bind:rigidBody={frontAxelRB} canSleep={false}>
+		<Collider
+			shape={'cuboid'}
+			args={[0.03, 0.03, 0.3]}
+			mass={FRONT_SUSP_MASS / 2}
+		/>
+	</RigidBody>
+
+	<!-- Wheels -->
+	<RigidBody
+		bind:rigidBody={backWheelRB}
+		canSleep={false}
+		lockTranslations={true}
+		angularDamping={BACK_SUSP_ANGULAR_DAMPING}
+	>
+		<Collider
+			shape="ball"
+			args={[BACK_SUSP_WHEEL_RADIUS]}
+			mass={BACK_SUSP_MASS / 2}
+			friction={$traction}
+		/>
+		<T.Mesh material={wheelMaterial} castShadow>
+			<T.TorusGeometry
+				args={[BACK_SUSP_WHEEL_RADIUS, BACK_SUSP_WHEEL_RADIUS / 4, 24]}
+			/>
+		</T.Mesh>
+	</RigidBody>
+
+	<RigidBody
+		bind:rigidBody={frontWheelRB}
+		canSleep={false}
+		lockTranslations={true}
+		angularDamping={FRONT_SUSP_ANGULAR_DAMPING}
+	>
+		<Collider
+			shape="ball"
+			args={[FRONT_SUSP_WHEEL_RADIUS]}
+			mass={FRONT_SUSP_MASS / 2}
+			friction={$traction}
+		/>
+		<T.Mesh material={wheelMaterial} castShadow>
+			<T.TorusGeometry
+				args={[FRONT_SUSP_WHEEL_RADIUS, FRONT_SUSP_WHEEL_RADIUS / 4, 24]}
+			/>
+		</T.Mesh>
+	</RigidBody>
+</Group>
