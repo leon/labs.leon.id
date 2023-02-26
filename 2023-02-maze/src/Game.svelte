@@ -112,6 +112,7 @@
 	<RigidBody
 		bind:rigidBody={ballRigidBody}
 		type={$pauseBall ? 'kinematicPosition' : 'dynamic'}
+		canSleep={false}
 		linearDamping={0.2}
 	>
 		<Collider shape="ball" args={[0.007]} mass={0.5} restitution={0.02} />
