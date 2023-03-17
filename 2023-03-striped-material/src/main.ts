@@ -14,6 +14,8 @@ import '@babylonjs/core/Rendering/edgesRenderer' // needed for edges renderer
 import { StripedMaterial } from './striped.material'
 import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder'
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
+import { VertexBuffer } from '@babylonjs/core/Buffers/buffer'
 
 // Engine
 const canvas = document.getElementById('app') as HTMLCanvasElement
@@ -40,10 +42,18 @@ const container = await SceneLoader.LoadAssetContainerAsync('/models/', 'babylon
 container.addAllToScene()
 const model1 = container.meshes[1]
 
+// force normal creation
+// const normals = model1.getVerticesData(VertexBuffer.NormalKind) ?? []
+// console.log('normals', normals)
+// if (normals.length === 0) {
+//   const positions = model1.getVerticesData(VertexBuffer.PositionKind)
+//   const indices = model1.getIndices()
+//   VertexData.ComputeNormals(positions, indices, normals)
+//   model1.setVerticesData(VertexBuffer.NormalKind, normals)
+// }
+
 const model2 = CreateBox('box', { size: 1 }, scene)
 model2.position = new Vector3(2, 0, 0)
-model2.enableEdgesRendering()
-model2.edgesColor = Color3.Red().toColor4(1)
 
 // Calculate world size
 const worldExtent = scene.getWorldExtends()
@@ -55,15 +65,21 @@ camera.setTarget(worldCenter)
 camera.radius = worldSize.length() * 1.5
 
 // New Material
+const color = Color3.Red()
 
 const mat = new StripedMaterial('striped', scene, {
-  bgColor: Color3.Red().toColor4(0.2),
-  stripeColor: Color3.Red().toColor4(1),
-  stripeWidth: 0.02,
+  bgColor: color.toColor4(0.5),
+  stripeColor: color.toColor4(1),
+  stripeWidth: 0.01,
   stripeAngle: Math.PI / 4,
 })
 model1.material = mat
+model1.enableEdgesRendering()
+model1.edgesColor = color.toColor4(1)
+
 model2.material = mat
+model2.enableEdgesRendering()
+model2.edgesColor = color.toColor4(1)
 
 // Start Render Loop
 engine.runRenderLoop(() => scene.render())
