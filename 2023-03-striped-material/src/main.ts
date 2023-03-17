@@ -14,8 +14,6 @@ import '@babylonjs/core/Rendering/edgesRenderer' // needed for edges renderer
 import { StripedMaterial } from './striped.material'
 import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder'
-import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
-import { VertexBuffer } from '@babylonjs/core/Buffers/buffer'
 
 // Engine
 const canvas = document.getElementById('app') as HTMLCanvasElement
@@ -38,7 +36,7 @@ const camera = new ArcRotateCamera('arcRotateCamera', startAlpha, startBeta, 10,
 scene.switchActiveCamera(camera)
 
 // Load GLTF Model
-const container = await SceneLoader.LoadAssetContainerAsync('/models/', 'babylon-cube.glb', scene)
+const container = await SceneLoader.LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/`, 'babylon-cube.glb', scene)
 container.addAllToScene()
 const model1 = container.meshes[1]
 

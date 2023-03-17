@@ -8,7 +8,10 @@ import '@babylonjs/core/Materials/Textures/Loaders/envTextureLoader' // needed f
 import '@babylonjs/core/Misc/dds' // needed for environment texture
 
 export function createEnvironment(scene: Scene) {
-  const environmentTexture = CubeTexture.CreateFromPrefilteredData('/environments/environment-specular.env', scene)
+  const environmentTexture = CubeTexture.CreateFromPrefilteredData(
+    `${import.meta.env.BASE_URL}environments/environment-specular.env`,
+    scene,
+  )
   scene.environmentTexture = environmentTexture
 
   const skyBox = CreateBox('skyBox', { size: 1000 }, scene)
