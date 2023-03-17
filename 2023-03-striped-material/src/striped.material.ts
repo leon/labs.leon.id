@@ -33,25 +33,63 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 varying vec2 vUV;
 
+uniform mat4 world;
 uniform vec4 bgColor;
 uniform vec4 stripeColor;
 uniform float stripeWidth;
 uniform float stripeAngle;
+uniform bool fixedWidth;
 
 void main() {
-  vec2 stripeUV = vec2(vUV.x * cos(stripeAngle) + vUV.y * sin(stripeAngle), vUV.y * cos(stripeAngle) - vUV.x * sin(stripeAngle));
+  // Calculate stripe width in world space
+  vec4 worldPos = vec4(vPositionW, 1.0);
+
+  float worldStripeWidth = length(mat3(world) * vec3(stripeWidth / 100.0, 0.0, 0.0));
+  float calculatedStripeWidth = worldStripeWidth;
+  if (fixedWidth) {
+    // calculate the width of the stripes according to world space
+    calculatedStripeWidth = (worldStripeWidth / gl_FragCoord.w / 10.0);
+  }
+
+  // Calculate stripe pattern in world space
+  float stripeX = dot(vPositionW, normalize(vec3(cos(stripeAngle), sin(stripeAngle), 0.0)));
+  vec2 stripeUV = vec2(stripeX / calculatedStripeWidth, vUV.y);
+
+  // either bg or stripe color
   gl_FragColor = bgColor;
-  if (mod(stripeUV.x / stripeWidth, 2.0) > 1.0) {
+  if (mod(stripeUV.x, 2.0) > 1.0) {
     gl_FragColor = stripeColor;
   }
 }
+
 `
+
+// void main() {
+//   vec2 stripeUV = vec2(vUV.x * cos(stripeAngle) + vUV.y * sin(stripeAngle), vUV.y * cos(stripeAngle) - vUV.x * sin(stripeAngle));
+//   gl_FragColor = bgColor;
+//   if (mod(stripeUV.x / (stripeWidth / gl_FragCoord.w * 2.0), 2.0) > 1.0) {
+//     gl_FragColor = stripeColor;
+//   }
+// }
+
+// void main() {
+//   // Calculate stripe width in world space
+//   vec4 worldPos = vec4(vPositionW, 1.0);
+//   float worldStripeWidth = length(mat3(world) * vec3(stripeWidth, 0.0, 0.0));
+//   // Calculate stripe pattern in world space
+//   vec2 stripeUV = vec2(dot(vPositionW, normalize(vec3(cos(stripeAngle), sin(stripeAngle), 0.0))) / worldStripeWidth, vUV.y);
+//   gl_FragColor = bgColor;
+//   if (mod(stripeUV.x, 2.0) > 1.0) {
+//     gl_FragColor = stripeColor;
+//   }
+// }
 
 export interface StripedMaterialOptions {
   bgColor?: Color4
   stripeColor?: Color4
   stripeWidth?: number
   stripeAngle?: number
+  fixedWidth?: boolean
 }
 
 export class StripedMaterial extends ShaderMaterial {
@@ -59,8 +97,9 @@ export class StripedMaterial extends ShaderMaterial {
     options = {
       bgColor: Color3.Red().toColor4(0.5),
       stripeColor: Color3.Red().toColor4(1),
-      stripeWidth: 0.02,
+      stripeWidth: 10,
       stripeAngle: 0.7854, // 45° in radians
+      fixedWidth: false,
       ...options,
     }
     super(
@@ -82,6 +121,7 @@ export class StripedMaterial extends ShaderMaterial {
           'stripeColor',
           'stripeWidth',
           'stripeAngle',
+          'fixedWidth',
         ],
       },
     )
@@ -90,6 +130,7 @@ export class StripedMaterial extends ShaderMaterial {
     this.setColor4('stripeColor', options.stripeColor!)
     this.setFloat('stripeWidth', options.stripeWidth!)
     this.setFloat('stripeAngle', options.stripeAngle!)
+    this.setFloat('fixedWidth', options.fixedWidth ? 1.0 : 0.0)
 
     // force alpha blending
     this.alpha = 0.9999

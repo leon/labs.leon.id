@@ -53,6 +53,9 @@ const model1 = container.meshes[1]
 const model2 = CreateBox('box', { size: 1 }, scene)
 model2.position = new Vector3(2, 0, 0)
 
+const model3 = CreateBox('box', { size: 1 }, scene)
+model3.position = new Vector3(4, 0, 0)
+
 // Calculate world size
 const worldExtent = scene.getWorldExtends()
 const worldSize = worldExtent.max.subtract(worldExtent.min)
@@ -68,8 +71,7 @@ const color = Color3.Red()
 const mat = new StripedMaterial('striped', scene, {
   bgColor: color.toColor4(0.5),
   stripeColor: color.toColor4(1),
-  stripeWidth: 0.01,
-  stripeAngle: Math.PI / 4,
+  stripeWidth: 5,
 })
 model1.material = mat
 model1.enableEdgesRendering()
@@ -78,6 +80,17 @@ model1.edgesColor = color.toColor4(1)
 model2.material = mat
 model2.enableEdgesRendering()
 model2.edgesColor = color.toColor4(1)
+
+const color2 = Color3.FromHexString('#53B200')
+const mat2 = new StripedMaterial('striped-fixed', scene, {
+  bgColor: color2.toColor4(0.5),
+  stripeColor: color2.toColor4(1),
+  fixedWidth: true,
+  stripeWidth: 5,
+})
+model3.material = mat2
+model3.enableEdgesRendering()
+model3.edgesColor = color2.toColor4(1)
 
 // Start Render Loop
 engine.runRenderLoop(() => scene.render())
