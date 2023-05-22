@@ -17,6 +17,7 @@ import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture'
 import { CreateIcoSphere, Mesh } from '@babylonjs/core/Meshes'
 import { HDRCubeTexture } from '@babylonjs/core/Materials/Textures/hdrCubeTexture'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import { TextureDome } from '@babylonjs/core/Helpers/textureDome'
 
 // Engine
 const canvas = document.getElementById('app') as HTMLCanvasElement
@@ -33,15 +34,19 @@ scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguratio
 
 const envTexture = CubeTexture.CreateFromPrefilteredData(`${import.meta.env.BASE_URL}environments/quarry_02_2k.env`, scene)
 scene.environmentTexture = envTexture
-
 const skyboxTexture = envTexture.clone()
-skyboxTexture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE
+skyboxTexture.coordinatesMode = Texture.SKYBOX_MODE
+
+// const skyboxTexture = new Texture(`${import.meta.env.BASE_URL}environments/quarry_02_2k.jpg`, scene)
+// skyboxTexture.wrapU = Texture.CLAMP_ADDRESSMODE
+// skyboxTexture.wrapV = Texture.CLAMP_ADDRESSMODE
+// skyboxTexture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE
 
 const skyboxMaterial = new GroundSkyboxMaterial(
   'skybox',
   {
     map: skyboxTexture,
-    height: 16,
+    height: 15,
     radius: 100,
   },
   scene,
@@ -49,7 +54,7 @@ const skyboxMaterial = new GroundSkyboxMaterial(
 const icoSphere = CreateIcoSphere('skybox', {
   radius: 1,
   subdivisions: 16,
-  sideOrientation: Mesh.DOUBLESIDE,
+  sideOrientation: Mesh.BACKSIDE,
   updatable: false,
 })
 icoSphere.material = skyboxMaterial
