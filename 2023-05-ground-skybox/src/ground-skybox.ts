@@ -9,7 +9,9 @@ export interface GroundSkyboxMaterialOptions {
 }
 
 /*
-Conversion of https://threejs.org/examples/webgl_materials_envmaps_groundprojected.html
+Conversion of threejs example https://threejs.org/examples/webgl_materials_envmaps_groundprojected.html
+which is a conversion of the react-three-fiber <Environment /> component, which uses the three-stdlib class
+https://github.com/pmndrs/three-stdlib/blob/main/src/objects/GroundProjectedEnv.ts
 */
 
 /*
