@@ -150,7 +150,7 @@ export class GroundSkyboxMaterial extends ShaderMaterial {
       },
       {
         attributes: ['position'],
-        uniforms: ['world', 'projection', 'worldView', 'map', 'height', 'radius'],
+        uniforms: ['world', 'projection', 'worldView', 'cameraPosition', 'map', 'height', 'radius'],
       },
     )
 

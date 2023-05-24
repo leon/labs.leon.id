@@ -11,13 +11,12 @@ import '@babylonjs/loaders/glTF/2.0' // needed for gltf 2
 import '@babylonjs/core/Rendering/edgesRenderer' // needed for edges renderer
 import '@babylonjs/core/Materials/Textures/Loaders/envTextureLoader' // needed for environment texture
 import '@babylonjs/core/Misc/dds' // needed for environment texture
+// import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent" // shadows
 
 import { GroundSkyboxMaterial } from './ground-skybox'
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture'
-import { CreateIcoSphere, Mesh } from '@babylonjs/core/Meshes'
-import { HDRCubeTexture } from '@babylonjs/core/Materials/Textures/hdrCubeTexture'
+import { AbstractMesh, CreateIcoSphere, Mesh } from '@babylonjs/core/Meshes'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
-import { TextureDome } from '@babylonjs/core/Helpers/textureDome'
 
 // Engine
 const canvas = document.getElementById('app') as HTMLCanvasElement
@@ -46,8 +45,8 @@ const skyboxMaterial = new GroundSkyboxMaterial(
   'skybox',
   {
     map: skyboxTexture,
-    height: 15,
-    radius: 100,
+    height: 20,
+    radius: 400,
   },
   scene,
 )
@@ -58,16 +57,20 @@ const icoSphere = CreateIcoSphere('skybox', {
   updatable: false,
 })
 icoSphere.material = skyboxMaterial
-icoSphere.scaling.setAll(100)
+icoSphere.scaling.setAll(200)
+icoSphere.receiveShadows = true
 
 // Camera
 const startAlpha = (Math.PI / 4) * 3 // rotate so we see the cube
 const startBeta = Math.PI / 3 // look from above
 const camera = new ArcRotateCamera('arcRotateCamera', startAlpha, startBeta, 10, Vector3.Zero(), scene)
+camera.lowerRadiusLimit = 10
+camera.allowUpsideDown = false
 scene.switchActiveCamera(camera)
 
 // Load GLTF Model
 const container = await SceneLoader.LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/`, 'truck.glb', scene)
+const rootMesh = container.meshes.find(node => node.id === '__root__') as AbstractMesh
 container.addAllToScene()
 
 // Calculate world size
@@ -78,6 +81,7 @@ const worldCenter = worldExtent.max.add(worldExtent.min).scale(0.5)
 // position camera at center
 camera.setTarget(worldCenter)
 camera.radius = worldSize.length() * 1.5
+
 
 // Start Render Loop
 engine.runRenderLoop(() => scene.render())
